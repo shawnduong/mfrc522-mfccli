@@ -2,6 +2,10 @@
 
 MFRC522 MFCCLI is a Mifare Classic CLI tool for Arduino MFRC522-compliant reader/writers.
 
+## Dependencies
+
+Make sure you have the [MFRC522](https://github.com/miguelbalboa/rfid) library installed. On the Arduino IDE, this is credited to "GithubCommunity."
+
 ## Quick Guide
 
 1. Follow the [wiring guide](./wiring.md) to physically wire the RFID reader/writer to the Arduino.
