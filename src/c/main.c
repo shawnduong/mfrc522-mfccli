@@ -3,14 +3,13 @@
 #include <string.h>
 #include <unistd.h>
 #include "protocol.h"
+#include "send.h"
 #include "serial.h"
 
 #define BUFFER_SIZE 128
 
 #define DEBUG 1
 #define DBG_PRINTF(s, ...)  if (DEBUG) printf(s, ##__VA_ARGS__);
-
-#define PROMPT "mfrc522-mfccli $ "
 
 int main(int argc, char *argv[])
 {
@@ -57,8 +56,7 @@ int main(int argc, char *argv[])
 			/* Device is ready to receive a command. */
 			case STATUS_READY:
 				puts(" done.");
-				printf(PROMPT);
-				fgets(command, BUFFER_SIZE, stdin);
+				send_command(fd, command, BUFFER_SIZE);
 				break;
 
 			/* Else case. */
@@ -68,7 +66,7 @@ int main(int argc, char *argv[])
 				return -1;
 		}
 	}
-	while (strncmp(command, "exit", 4) != 0);
+	while (strcmp(command, "exit") != 0);
 
 	/* Close the serial device. */
 	close(fd);
