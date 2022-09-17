@@ -10,9 +10,11 @@
 #define DEBUG 1
 #define DBG_PRINTF(s, ...)  if (DEBUG) printf(s, ##__VA_ARGS__);
 
+#define PROMPT "mfrc522-mfccli $ "
+
 int main(int argc, char *argv[])
 {
-	int serfd;
+	int fd;
 	char stat;
 	char buffer[BUFFER_SIZE];
 	char command[BUFFER_SIZE];
@@ -24,12 +26,15 @@ int main(int argc, char *argv[])
 	}
 
 	/* Open the serial device. */
-	if ((serfd = open_serial(argv[1])) < 0)
+	if ((fd = open_serial(argv[1])) < 0)
 	{
 		puts("Error opening device.");
-		DBG_PRINTF("DBG: open_serial returned %d\n", serfd);
+		DBG_PRINTF("DBG: open_serial returned %d\n", fd);
 		return -1;
 	}
+
+	memset(buffer, 0, BUFFER_SIZE);
+	memset(command, 0, BUFFER_SIZE);
 
 	printf("Waiting for worker ready signal...");
 	fflush(stdout);
@@ -40,7 +45,7 @@ int main(int argc, char *argv[])
 		stat = -1;
 
 		/* Read a byte from serial. */
-		read(serfd, &stat, 1);
+		read(fd, &stat, 1);
 
 		switch (stat)
 		{
@@ -52,19 +57,21 @@ int main(int argc, char *argv[])
 			/* Device is ready to receive a command. */
 			case STATUS_READY:
 				puts(" done.");
+				printf(PROMPT);
+				fgets(command, BUFFER_SIZE, stdin);
 				break;
 
 			/* Else case. */
 			default:
 				DBG_PRINTF("DBG: Misunderstood protocol code from device: 0x%02X\n", stat);
-				close(serfd);
+				close(fd);
 				return -1;
 		}
 	}
-	while (strcmp(command, "exit") != 0);
+	while (strncmp(command, "exit", 4) != 0);
 
 	/* Close the serial device. */
-	close(serfd);
+	close(fd);
 
 	return 0;
 }

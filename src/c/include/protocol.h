@@ -1,3 +1,6 @@
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
+
 /* Serial protocol codes. */
 #define STATUS_READY                    0x10
 #define COMMAND_READ_UID                0x20
@@ -18,3 +21,5 @@
 #define STATUS_AUTHENTICATE_B_SUCCESS   0x47
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
+
+#endif

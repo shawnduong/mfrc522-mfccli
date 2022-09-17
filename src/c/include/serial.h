@@ -1,3 +1,6 @@
+#ifndef SERIAL_H
+#define SERIAL_H
+
 #include <termios.h>
 
 /* Open a serial device. Return the fd, or a negative if errored. Takes a
@@ -42,3 +45,5 @@ int open_serial(char *device)
 
 	return fd;
 }
+
+#endif
