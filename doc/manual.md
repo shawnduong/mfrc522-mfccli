@@ -46,6 +46,14 @@ mfrc522-mfccli $ exit
 $
 ```
 
+**Getting Help**
+
+```sh
+mfrc522-mfccli $ help
+Syntax: help <COMMAND>
+    <COMMAND>  read write auth detect
+```
+
 **Read UID**
 
 ```sh
