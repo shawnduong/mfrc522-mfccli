@@ -90,16 +90,16 @@ Writing data... done.
 **Authenticate**
 
 ```sh
-mfrc522-mfccli $ authenticate <BLOCK NUMBER> <KEY A> <KEY B>
-mfrc522-mfccli $ authenticate 5 FFFFFFFFFFFF FFFFFFFFFFFF
+mfrc522-mfccli $ auth <BLOCK NUMBER> <KEY A> <KEY B>
+mfrc522-mfccli $ auth 5 FFFFFFFFFFFF FFFFFFFFFFFF
 Authenticating to block 5 (trailer block 7)... done.
 
-mfrc522-mfccli $ authenticate A <BLOCK NUMBER> <KEY A>
-mfrc522-mfccli $ authenticate A 5 FFFFFFFFFFFF
+mfrc522-mfccli $ auth A <BLOCK NUMBER> <KEY A>
+mfrc522-mfccli $ auth A 5 FFFFFFFFFFFF
 Authenticating to block 5 (trailer block 7)... done.
 
-mfrc522-mfccli $ authenticate B <BLOCK NUMBER> <KEY B>
-mfrc522-mfccli $ authenticate B 5 FFFFFFFFFFFF
+mfrc522-mfccli $ auth B <BLOCK NUMBER> <KEY B>
+mfrc522-mfccli $ auth B 5 FFFFFFFFFFFF
 Authenticating to block 5 (trailer block 7)... done.
 ```
 
