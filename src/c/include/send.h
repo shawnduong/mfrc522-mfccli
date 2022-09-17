@@ -10,22 +10,27 @@
 	"Syntax: read <ITEM>\n"           \
 	"    <ITEM>  uid atqa sak block"
 
-#define READ_BLOCK_USAGE                               \
-	"Syntax: read block <BLOCK NUMBER>\n"              \
+#define READ_BLOCK_USAGE                                \
+	"Syntax: read block <BLOCK NUMBER>\n"               \
 	"    <BLOCK NUMBER>  decimal number from 0 to 63."
 
-#define WRITE_USAGE                                                             \
-	"Syntax: write <BLOCK NUMBER> <DATA>\n"                                     \
-	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"                        \
-	"    <DATA>          16 bytes' worth of hexadecimal data, without spaces."
+#define WRITE_USAGE                                        \
+	"Syntax: write <BLOCK NUMBER> <DATA>\n"                \
+	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"   \
+	"    <DATA>          16 bytes' worth of data in hex."
 
-#define AUTH_USAGE                                                           \
-	"Syntax: auth <BLOCK NUMBER> <KEY A> <KEY B>\n"                          \
-	"Syntax: auth A <BLOCK NUMBER> <KEY A>\n"                                \
-	"Syntax: auth B <BLOCK NUMBER> <KEY B>\n"                                \
-	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"                     \
-	"    <KEY A>         6 bytes' worth of key A in hex, without spaces.\n"  \
-	"    <KEY B>         6 bytes' worth of key B in hex, without spaces."    \
+#define AUTH_USAGE                                           \
+	"Syntax: auth <BLOCK NUMBER> <KEY A> <KEY B>\n"          \
+	"Syntax: auth A <BLOCK NUMBER> <KEY A>\n"                \
+	"Syntax: auth B <BLOCK NUMBER> <KEY B>\n"                \
+	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"     \
+	"    <KEY A>         6 bytes' worth of key A in hex.\n"  \
+	"    <KEY B>         6 bytes' worth of key B in hex."    \
+
+#define P_READ_USAGE()        { puts(READ_USAGE)        ; continue; }
+#define P_READ_BLOCK_USAGE()  { puts(READ_BLOCK_USAGE)  ; continue; }
+#define P_WRITE_USAGE()       { puts(WRITE_USAGE)       ; continue; }
+#define P_AUTH_USAGE()        { puts(AUTH_USAGE)        ; continue; }
 
 /* Verifies that some string consists entirely of decimal digits for n many
    characters. It must be unsigned. Returns 0 if false, 1 if true. */
@@ -59,7 +64,7 @@ void get_command(char *cmd, int len)
 	char *token;
 
 	/* Return to caller upon valid input. */
-	do
+	while(1)
 	{
 		printf(PROMPT);
 
@@ -84,10 +89,7 @@ void get_command(char *cmd, int len)
 		{
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
-			{
-				puts(READ_USAGE);
-				continue;
-			}
+				P_READ_USAGE();
 
 			/* Check that the token is valid. */
 			     if (strcmp(token, "uid"  ) == 0)  return;
@@ -97,98 +99,62 @@ void get_command(char *cmd, int len)
 			{
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
-				{
-					puts(READ_BLOCK_USAGE);
-					continue;
-				}
+					P_READ_BLOCK_USAGE();
 
-				/* Validate that the token is in unsigned decimal and is from 0
-				   to 63. */
-				if (str_is_udec(token, strlen(token)) && atoi(token) < 64)
-				{
-					return;
-				}
-				else
-				{
-					puts(READ_BLOCK_USAGE);
-					continue;
-				}
+				/* Validate that the token is in unsigned decimal and from 0 to 63. */
+				if (str_is_udec(token, strlen(token)) && atoi(token) < 64)  return;
+				else  P_READ_BLOCK_USAGE();
 			}
 
-			puts(READ_USAGE);
+			P_READ_USAGE();
 		}
 		/* Handle write. */
 		else if (strcmp(token, "write") == 0)
 		{
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
-			{
-				puts(WRITE_USAGE);
-				continue;
-			}
+				P_WRITE_USAGE();
 
 			/* Validate that the token is in unsigned decimal and is from 0 to
 			   63. */
 			if (!(str_is_udec(token, strlen(token)) && atoi(token) < 64))
-			{
-				puts(WRITE_USAGE);
-				continue;
-			}
+				P_WRITE_USAGE();
 
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
-			{
-				puts(WRITE_USAGE);
-				continue;
-			}
+				P_WRITE_USAGE();
 
 			/* Validate that the token is in hex and is 32 digits long. */
 			if (str_is_hex(token, strlen(token)) && strlen(token) == 32)
-			{
 				return;
-			}
 
-			puts(WRITE_USAGE);
+			P_WRITE_USAGE();
 		}
 		/* Handle auth. */
 		else if (strcmp(token, "auth") == 0)
 		{
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
-			{
-				puts(AUTH_USAGE);
-				continue;
-			}
+				P_AUTH_USAGE();
 
 			/* Validate dual-key auth. */
 			if (str_is_udec(token, strlen(token)) && atoi(token) < 64)
 			{
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Validate that key A is in hex and is 12 digits long. */
 				if (!(str_is_hex(token, strlen(token)) && strlen(token) == 12))
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Validate that key B is in hex and is 12 digits long. */
 				if (str_is_hex(token, strlen(token)) && strlen(token) == 12)
-				{
 					return;
-				}
 			}
 			/* Validate single-key auth. */
 			else if (strlen(token) == 1 && (token[0] == 'A' || token[0] == 'a'
@@ -196,43 +162,29 @@ void get_command(char *cmd, int len)
 			{
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Validate that the token is in unsigned decimal and is from 0
 				   to 63. */
 				if (!str_is_udec(token, strlen(token)) && atoi(token) < 64)
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
-				{
-					puts(AUTH_USAGE);
-					continue;
-				}
+					P_AUTH_USAGE();
 
 				/* Validate that the key is in hex and is 12 digits long. */
 				if (str_is_hex(token, strlen(token)) && strlen(token) == 12)
-				{
 					return;
-				}
 
-				puts(AUTH_USAGE);
-				continue;
+				P_AUTH_USAGE();
 			}
 
-			puts(AUTH_USAGE);
-			continue;
+			P_AUTH_USAGE();
 		}
 		/* Unknown command. */
 		else  puts("Unknown command.");
 	}
-	while (1);
 }
 
 /* Send a command to specified fd. Input will be written to the command buffer
