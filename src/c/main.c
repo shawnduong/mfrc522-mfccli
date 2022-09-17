@@ -1,5 +1,7 @@
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include "protocol.h"
@@ -13,7 +15,7 @@
 
 int main(int argc, char *argv[])
 {
-	int fd;
+	int8_t fd;
 	char stat;
 	char buffer[BUFFER_SIZE];
 	char command[BUFFER_SIZE];

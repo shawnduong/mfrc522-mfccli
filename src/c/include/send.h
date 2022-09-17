@@ -1,8 +1,6 @@
 #ifndef SEND_H
 #define SEND_H
 
-#include <stdlib.h>
-
 /* Prompt is cyan. */
 #define PROMPT "\x1b[36mmfrc522-mfccli $ \x1b[0m"
 
@@ -48,27 +46,32 @@
 #define IS_HEX_L32(s)  (str_is_hex(s, strlen(s)) && strlen(s) == 32)
 #define IS_DEC_M64(s)  (str_is_udec(s, strlen(s)) && atoi(s) < 64)
 
+#define FREE_RET(p)    { free(p); return; }
+
 /* Verifies that some string consists entirely of decimal digits for n many
    characters and is unsigned. Returns 0 if false, 1 if true. */
-int str_is_udec(char *str, int n)
+uint8_t str_is_udec(char *str, uint8_t n)
 {
-	for (int i = 0; i < n; i++)  if (!IS_DEC(str[i]))  return 0;
+	for (uint8_t i = 0; i < n; i++)  if (!IS_DEC(str[i]))  return 0;
 	return 1;
 }
 
 /* Verifies that some string consists entirely of hexadecimal digits for n many
    characters. Returns 0 if false, 1 if true. */
-int str_is_hex(char *str, int n)
+uint8_t str_is_hex(char *str, uint8_t n)
 {
-	for (int i = 0; i < n; i++)  if (!IS_HEX(str[i]))  return 0;
+	for (uint8_t i = 0; i < n; i++)  if (!IS_HEX(str[i]))  return 0;
 	return 1;
 }
 
 /* Get a command and perform validation. Write the valid command to the cmd
    buffer. The len input is the maximum size of the cmd buffer. */
-void get_command(char *cmd, int len)
+void get_command(char *command, uint8_t len)
 {
+	char *cmd;
 	char *token;
+
+	cmd = (char *)calloc(len, sizeof(char));
 
 	/* Return to caller upon valid input. */
 	while (1)
@@ -82,11 +85,14 @@ void get_command(char *cmd, int len)
 		/* Empty input. */
 		if (strlen(cmd) == 0)  continue;
 
+		memset(command, 0, len);
+		strncpy(command, cmd, len);
+
 		/* Tokenize. */
 		token = strtok(cmd, " ");
 
 		/* exit */
-		if (strcmp(token, "exit") == 0)  return;
+		if (strcmp(token, "exit") == 0)  FREE_RET(cmd)
 		/* help */
 		else if (strcmp(token, "help") == 0 || strcmp(token, "?") == 0)
 		{
@@ -109,9 +115,9 @@ void get_command(char *cmd, int len)
 				P_READ_USAGE();
 
 			/* Check that the token is valid. */
-			     if (strcmp(token, "uid"  ) == 0)  return;
-			else if (strcmp(token, "atqa" ) == 0)  return;
-			else if (strcmp(token, "sak"  ) == 0)  return;
+			     if (strcmp(token, "uid"  ) == 0)  FREE_RET(cmd)
+			else if (strcmp(token, "atqa" ) == 0)  FREE_RET(cmd)
+			else if (strcmp(token, "sak"  ) == 0)  FREE_RET(cmd)
 			else if (strcmp(token, "block") == 0)
 			{
 				/* Get the next token. */
@@ -119,7 +125,7 @@ void get_command(char *cmd, int len)
 					P_READ_BLOCK_USAGE();
 
 				/* Validate that the token is unsigned decimal < 64. */
-				if (IS_DEC_M64(token))  return;
+				if (IS_DEC_M64(token))  FREE_RET(cmd)
 				else  P_READ_BLOCK_USAGE();
 			}
 
@@ -142,7 +148,7 @@ void get_command(char *cmd, int len)
 
 			/* Validate that the token is hex length 32. */
 			if (IS_HEX_L32(token))
-				return;
+				FREE_RET(cmd)
 
 			P_WRITE_USAGE();
 		}
@@ -170,7 +176,7 @@ void get_command(char *cmd, int len)
 
 				/* Validate that key B is hex length 12. */
 				if (IS_HEX_L12(token))
-					return;
+					FREE_RET(cmd)
 			}
 			/* Validate single-key auth. */
 			else if (IS_AB(token))
@@ -189,7 +195,7 @@ void get_command(char *cmd, int len)
 
 				/* Validate that key is in hex and is 12 digits long. */
 				if (IS_HEX_L12(token))
-					return;
+					FREE_RET(cmd)
 			}
 
 			P_AUTH_USAGE();
@@ -201,7 +207,7 @@ void get_command(char *cmd, int len)
 				P_DETECT_USAGE();
 
 			if (strcmp(token, "card") == 0)
-				return;
+				FREE_RET(cmd)
 
 			P_DETECT_USAGE();
 		}
@@ -215,8 +221,11 @@ void get_command(char *cmd, int len)
 
 /* Send a command to specified fd. Input will be written to the command buffer
    up to the specified maximum length. */
-void send_command(int fd, char *command, int len)
+void send_command(int8_t fd, char *command, uint8_t len)
 {
+	char *token;
+
+	/* Get a validated user command. */
 	get_command(command, len);
 }
 

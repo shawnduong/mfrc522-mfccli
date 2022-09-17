@@ -5,9 +5,9 @@
 
 /* Open a serial device. Return the fd, or a negative if errored. Takes a
    device name. */
-int open_serial(char *device)
+int8_t open_serial(char *device)
 {
-	int fd;
+	int8_t fd;
 	struct termios tty;
 
 	/* Open the serial device. */
