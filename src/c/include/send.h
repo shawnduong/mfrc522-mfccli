@@ -6,6 +6,10 @@
 /* Prompt is cyan. */
 #define PROMPT "\x1b[36mmfrc522-mfccli $ \x1b[0m"
 
+#define HELP \
+	"Syntax: help <COMMAND>\n"               \
+	"    <COMMAND>  read write auth detect"
+
 #define READ_USAGE \
 	"Syntax: read <ITEM>\n"           \
 	"    <ITEM>  uid atqa sak block"
@@ -30,6 +34,7 @@
 #define DETECT_USAGE \
 	"Syntax: detect card"
 
+#define P_HELP()              { puts(HELP)              ; continue; }
 #define P_READ_USAGE()        { puts(READ_USAGE)        ; continue; }
 #define P_READ_BLOCK_USAGE()  { puts(READ_BLOCK_USAGE)  ; continue; }
 #define P_WRITE_USAGE()       { puts(WRITE_USAGE)       ; continue; }
@@ -82,6 +87,20 @@ void get_command(char *cmd, int len)
 
 		/* exit */
 		if (strcmp(token, "exit") == 0)  return;
+		/* help */
+		else if (strcmp(token, "help") == 0 || strcmp(token, "?") == 0)
+		{
+			/* Get the next token. */
+			if (!(token = strtok(NULL, " ")))
+				P_HELP();
+
+			     if (strcmp(token, "read"  ) == 0)  P_READ_USAGE()
+			else if (strcmp(token, "write" ) == 0)  P_WRITE_USAGE()
+			else if (strcmp(token, "auth"  ) == 0)  P_AUTH_USAGE()
+			else if (strcmp(token, "detect") == 0)  P_DETECT_USAGE()
+
+			P_HELP();
+		}
 		/* read */
 		else if (strcmp(token, "read") == 0)
 		{
