@@ -6,20 +6,20 @@
 /* Prompt is cyan. */
 #define PROMPT "\x1b[36mmfrc522-mfccli $ \x1b[0m"
 
-#define READ_USAGE                    \
+#define READ_USAGE \
 	"Syntax: read <ITEM>\n"           \
 	"    <ITEM>  uid atqa sak block"
 
-#define READ_BLOCK_USAGE                                \
+#define READ_BLOCK_USAGE \
 	"Syntax: read block <BLOCK NUMBER>\n"               \
 	"    <BLOCK NUMBER>  decimal number from 0 to 63."
 
-#define WRITE_USAGE                                        \
+#define WRITE_USAGE \
 	"Syntax: write <BLOCK NUMBER> <DATA>\n"                \
 	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"   \
 	"    <DATA>          16 bytes' worth of data in hex."
 
-#define AUTH_USAGE                                           \
+#define AUTH_USAGE \
 	"Syntax: auth <BLOCK NUMBER> <KEY A> <KEY B>\n"          \
 	"Syntax: auth A <BLOCK NUMBER> <KEY A>\n"                \
 	"Syntax: auth B <BLOCK NUMBER> <KEY B>\n"                \
@@ -27,7 +27,7 @@
 	"    <KEY A>         6 bytes' worth of key A in hex.\n"  \
 	"    <KEY B>         6 bytes' worth of key B in hex."
 
-#define DETECT_USAGE       \
+#define DETECT_USAGE \
 	"Syntax: detect card"
 
 #define P_READ_USAGE()        { puts(READ_USAGE)        ; continue; }
@@ -36,11 +36,18 @@
 #define P_AUTH_USAGE()        { puts(AUTH_USAGE)        ; continue; }
 #define P_DETECT_USAGE()      { puts(DETECT_USAGE)      ; continue; }
 
+#define IS_AB(s)       (strlen(s) == 1 && (s[0] == 'a' || s[0] == 'A' || s[0] == 'b' || s[0] == 'B'))
+#define IS_DEC(c)      (c >= '0' && c <= '9')
+#define IS_HEX(c)      ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
+#define IS_HEX_L12(s)  (str_is_hex(s, strlen(s)) && strlen(s) == 12)
+#define IS_HEX_L32(s)  (str_is_hex(s, strlen(s)) && strlen(s) == 32)
+#define IS_DEC_M64(s)  (str_is_udec(s, strlen(s)) && atoi(s) < 64)
+
 /* Verifies that some string consists entirely of decimal digits for n many
-   characters. It must be unsigned. Returns 0 if false, 1 if true. */
+   characters and is unsigned. Returns 0 if false, 1 if true. */
 int str_is_udec(char *str, int n)
 {
-	for (int i = 0; i < n; i++)  if (str[i] < '0' || str[i] > '9')  return 0;
+	for (int i = 0; i < n; i++)  if (!IS_DEC(str[i]))  return 0;
 	return 1;
 }
 
@@ -48,16 +55,7 @@ int str_is_udec(char *str, int n)
    characters. Returns 0 if false, 1 if true. */
 int str_is_hex(char *str, int n)
 {
-	for (int i = 0; i < n; i++)
-	{
-		if (str[i] < '0' || str[i] > 'f'
-		    || (str[i] > '9' && str[i] < 'A')
-		    || (str[i] > 'F' && str[i] < 'a'))
-		{
-			return 0;
-		}
-	}
-
+	for (int i = 0; i < n; i++)  if (!IS_HEX(str[i]))  return 0;
 	return 1;
 }
 
@@ -68,7 +66,7 @@ void get_command(char *cmd, int len)
 	char *token;
 
 	/* Return to caller upon valid input. */
-	while(1)
+	while (1)
 	{
 		printf(PROMPT);
 
@@ -82,13 +80,9 @@ void get_command(char *cmd, int len)
 		/* Tokenize. */
 		token = strtok(cmd, " ");
 
-		/* Handle exit. */
-		if (strcmp(token, "exit") == 0)
-		{
-			/* Return to the caller. */
-			return;
-		}
-		/* Handle read. */
+		/* exit */
+		if (strcmp(token, "exit") == 0)  return;
+		/* read */
 		else if (strcmp(token, "read") == 0)
 		{
 			/* Get the next token. */
@@ -105,36 +99,35 @@ void get_command(char *cmd, int len)
 				if (!(token = strtok(NULL, " ")))
 					P_READ_BLOCK_USAGE();
 
-				/* Validate that the token is in unsigned decimal and from 0 to 63. */
-				if (str_is_udec(token, strlen(token)) && atoi(token) < 64)  return;
+				/* Validate that the token is unsigned decimal < 64. */
+				if (IS_DEC_M64(token))  return;
 				else  P_READ_BLOCK_USAGE();
 			}
 
 			P_READ_USAGE();
 		}
-		/* Handle write. */
+		/* write */
 		else if (strcmp(token, "write") == 0)
 		{
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
 				P_WRITE_USAGE();
 
-			/* Validate that the token is in unsigned decimal and is from 0 to
-			   63. */
-			if (!(str_is_udec(token, strlen(token)) && atoi(token) < 64))
+			/* Validate that the token is unsigned decimal < 64. */
+			if (!IS_DEC_M64(token))
 				P_WRITE_USAGE();
 
 			/* Get the next token. */
 			if (!(token = strtok(NULL, " ")))
 				P_WRITE_USAGE();
 
-			/* Validate that the token is in hex and is 32 digits long. */
-			if (str_is_hex(token, strlen(token)) && strlen(token) == 32)
+			/* Validate that the token is hex length 32. */
+			if (IS_HEX_L32(token))
 				return;
 
 			P_WRITE_USAGE();
 		}
-		/* Handle auth. */
+		/* auth */
 		else if (strcmp(token, "auth") == 0)
 		{
 			/* Get the next token. */
@@ -142,51 +135,47 @@ void get_command(char *cmd, int len)
 				P_AUTH_USAGE();
 
 			/* Validate dual-key auth. */
-			if (str_is_udec(token, strlen(token)) && atoi(token) < 64)
+			if (IS_DEC_M64(token))
 			{
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
 					P_AUTH_USAGE();
 
-				/* Validate that key A is in hex and is 12 digits long. */
-				if (!(str_is_hex(token, strlen(token)) && strlen(token) == 12))
+				/* Validate that key A is hex length 12. */
+				if (!IS_HEX_L12(token))
 					P_AUTH_USAGE();
 
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
 					P_AUTH_USAGE();
 
-				/* Validate that key B is in hex and is 12 digits long. */
-				if (str_is_hex(token, strlen(token)) && strlen(token) == 12)
+				/* Validate that key B is hex length 12. */
+				if (IS_HEX_L12(token))
 					return;
 			}
 			/* Validate single-key auth. */
-			else if (strlen(token) == 1 && (token[0] == 'A' || token[0] == 'a'
-			    || token[0] == 'B' || token[0] == 'b'))
+			else if (IS_AB(token))
 			{
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
 					P_AUTH_USAGE();
 
-				/* Validate that the token is in unsigned decimal and is from 0
-				   to 63. */
-				if (!str_is_udec(token, strlen(token)) && atoi(token) < 64)
+				/* Validate that the token is unsigned decimal < 64. */
+				if (!IS_DEC_M64(token))
 					P_AUTH_USAGE();
 
 				/* Get the next token. */
 				if (!(token = strtok(NULL, " ")))
 					P_AUTH_USAGE();
 
-				/* Validate that the key is in hex and is 12 digits long. */
-				if (str_is_hex(token, strlen(token)) && strlen(token) == 12)
+				/* Validate that key is in hex and is 12 digits long. */
+				if (IS_HEX_L12(token))
 					return;
-
-				P_AUTH_USAGE();
 			}
 
 			P_AUTH_USAGE();
 		}
-		/* Handle detect. */
+		/* detect */
 		else if (strcmp(token, "detect") == 0)
 		{
 			if (!(token = strtok(NULL, " ")))
@@ -198,7 +187,10 @@ void get_command(char *cmd, int len)
 			P_DETECT_USAGE();
 		}
 		/* Unknown command. */
-		else  puts("Unknown command.");
+		else
+		{
+			puts("Unknown command.");
+		}
 	}
 }
 
