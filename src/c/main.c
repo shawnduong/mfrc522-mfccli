@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "protocol.h"
+#include "serial.h"
 
 #define BUFFER_SIZE 128
 
@@ -23,11 +24,16 @@ int main(int argc, char *argv[])
 	}
 
 	/* Open the serial device. */
-	if ((serfd = open(argv[1], O_RDWR)) < 0)
+	if ((serfd = open_serial(argv[1])) < 0)
 	{
 		puts("Error opening device.");
+		DBG_PRINTF("DBG: open_serial returned %d\n", serfd);
 		return -1;
 	}
+
+	printf("Waiting for worker ready signal...");
+	fflush(stdout);
+	usleep(1000);
 
 	do
 	{
@@ -40,7 +46,12 @@ int main(int argc, char *argv[])
 		{
 			/* Serial may need time to send status code. */
 			case -1:
-				usleep(10000);
+				usleep(1000);
+				break;
+
+			/* Device is ready to receive a command. */
+			case STATUS_READY:
+				puts(" done.");
 				break;
 
 			/* Else case. */
