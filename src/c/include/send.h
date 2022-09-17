@@ -25,12 +25,16 @@
 	"Syntax: auth B <BLOCK NUMBER> <KEY B>\n"                \
 	"    <BLOCK NUMBER>  decimal number from 0 to 63.\n"     \
 	"    <KEY A>         6 bytes' worth of key A in hex.\n"  \
-	"    <KEY B>         6 bytes' worth of key B in hex."    \
+	"    <KEY B>         6 bytes' worth of key B in hex."
+
+#define DETECT_USAGE       \
+	"Syntax: detect card"
 
 #define P_READ_USAGE()        { puts(READ_USAGE)        ; continue; }
 #define P_READ_BLOCK_USAGE()  { puts(READ_BLOCK_USAGE)  ; continue; }
 #define P_WRITE_USAGE()       { puts(WRITE_USAGE)       ; continue; }
 #define P_AUTH_USAGE()        { puts(AUTH_USAGE)        ; continue; }
+#define P_DETECT_USAGE()      { puts(DETECT_USAGE)      ; continue; }
 
 /* Verifies that some string consists entirely of decimal digits for n many
    characters. It must be unsigned. Returns 0 if false, 1 if true. */
@@ -181,6 +185,17 @@ void get_command(char *cmd, int len)
 			}
 
 			P_AUTH_USAGE();
+		}
+		/* Handle detect. */
+		else if (strcmp(token, "detect") == 0)
+		{
+			if (!(token = strtok(NULL, " ")))
+				P_DETECT_USAGE();
+
+			if (strcmp(token, "card") == 0)
+				return;
+
+			P_DETECT_USAGE();
 		}
 		/* Unknown command. */
 		else  puts("Unknown command.");
