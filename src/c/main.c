@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
 #include "protocol.h"
 #include "send.h"
@@ -16,6 +17,7 @@
 int main(int argc, char *argv[])
 {
 	int8_t fd;
+	uint8_t setup;
 	char stat;
 	char buffer[BUFFER_SIZE];
 	char command[BUFFER_SIZE];
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	setup = 1;
 	memset(buffer, 0, BUFFER_SIZE);
 	memset(command, 0, BUFFER_SIZE);
 
@@ -57,8 +60,8 @@ int main(int argc, char *argv[])
 
 			/* Device is ready to receive a command. */
 			case STATUS_READY:
-				puts(" done.");
-				send_command(fd, command, BUFFER_SIZE);
+				if (setup) { puts(" done."); setup = 0; }
+				send_command(fd, command, BUFFER_SIZE, DEBUG);
 				break;
 
 			/* Else case. */

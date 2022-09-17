@@ -64,6 +64,29 @@ uint8_t str_is_hex(char *str, uint8_t n)
 	return 1;
 }
 
+/* Convert a hex string of length n into bytes written into the dest. */
+void hexstr_to_bytes(char *dest, char *str, uint8_t n)
+{
+	uint8_t val;
+	char buffer;
+
+	for (uint8_t i = 0; i < n; i++)
+	{
+		buffer = str[i];
+
+		/* Standardize lowercase to capital. */
+		if (buffer >= 'a' && buffer <= 'f')  buffer -= 'a' - 'A';
+
+		/* Compute the value of the hex digit. */
+		     if (buffer >= '0' && buffer <= '9')  val = buffer - '0';
+		else if (buffer >= 'A' && buffer <= 'F')  val = 10 + buffer - 'A';
+
+		/* Write the bytes. */
+		if (i % 2 == 0)  dest[i/2] |= val << 4;
+		else             dest[i/2] |= val;
+	}
+}
+
 /* Get a command and perform validation. Write the valid command to the cmd
    buffer. The len input is the maximum size of the cmd buffer. */
 void get_command(char *command, uint8_t len)
@@ -221,12 +244,114 @@ void get_command(char *command, uint8_t len)
 
 /* Send a command to specified fd. Input will be written to the command buffer
    up to the specified maximum length. */
-void send_command(int8_t fd, char *command, uint8_t len)
+void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 {
 	char *token;
+	char buffer[32];
+	uint8_t size;
+	uint8_t temp;
 
 	/* Get a validated user command. */
 	get_command(command, len);
+	token = strtok(command, " ");
+
+	/* exit */
+	if (strcmp(token, "exit") == 0)  return;
+	/* read */
+	else if (strcmp(token, "read") == 0)
+	{
+		token = strtok(NULL, " ");
+
+		if (strcmp(token, "uid") == 0)
+		{
+			buffer[0] = COMMAND_READ_UID;
+			size = 1;
+		}
+		else if (strcmp(token, "atqa") == 0)
+		{
+			buffer[0] = COMMAND_READ_ATQA;
+			size = 1;
+		}
+		else if (strcmp(token, "sak") == 0)
+		{
+			buffer[0] = COMMAND_READ_SAK;
+			size = 1;
+		}
+		else if (strcmp(token, "block") == 0)
+		{
+			buffer[0] = COMMAND_READ_BLOCK;
+
+			token = strtok(NULL, " ");
+			buffer[1] = atoi(token);
+
+			size = 2;
+		}
+	}
+	/* write */
+	else if (strcmp(token, "write") == 0)
+	{
+		buffer[0] = COMMAND_WRITE;
+
+		token = strtok(NULL, " ");
+		buffer[1] = atoi(token);
+
+		token = strtok(NULL, " ");
+		hexstr_to_bytes(buffer+2, token, strlen(token));
+
+		size = 18;
+	}
+	/* auth */
+	else if (strcmp(token, "auth") == 0)
+	{
+		token = strtok(NULL, " ");
+
+		/* Dual-key. */
+		if (IS_DEC_M64(token))
+		{
+			buffer[0] = COMMAND_AUTHENTICATE;
+
+			temp = atoi(token);
+			buffer[1] = temp + (3-temp % 4);
+
+			token = strtok(NULL, " ");
+			hexstr_to_bytes(buffer+2, token, strlen(token));
+			token = strtok(NULL, " ");
+			hexstr_to_bytes(buffer+8, token, strlen(token));
+
+			size = 14;
+		}
+		/* Single key. */
+		else
+		{
+			if (strcmp(token, "A") == 0)  buffer[0] = COMMAND_AUTHENTICATE_A;
+			else                          buffer[0] = COMMAND_AUTHENTICATE_B;
+
+			token = strtok(NULL, " ");
+			temp = atoi(token);
+			buffer[1] = temp + (3-temp % 4);
+
+			token = strtok(NULL, " ");
+			hexstr_to_bytes(buffer+2, token, strlen(token));
+
+			size = 8;
+		}
+	}
+	/* detect */
+	else if (strcmp(token, "detect") == 0)
+	{
+		buffer[0] = COMMAND_DETECT_CARD;
+		size = 1;
+	}
+
+	if (debug)
+	{
+		printf("DBG: Sending %d byte(s) of data through serial.\n", size);
+		printf("DBG: -> ");
+		for (uint8_t i = 0; i < size; i++) printf("%02X ", (unsigned char)buffer[i]);
+		printf("\n");
+	}
+
+	write(fd, buffer, size);
 }
 
 #endif
