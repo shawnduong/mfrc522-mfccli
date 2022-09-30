@@ -74,6 +74,13 @@ int main(int argc, char *argv[])
 				printf("\n");
 				break;
 
+			/* Reading the SAK. */
+			case STATUS_READ_SAK_SUCCESS:
+				usleep(10000);
+				read(fd, buffer, 1);
+				printf("%02X\n", buffer[0]);
+				break;
+
 			/* Detecting a card. */
 			case STATUS_DETECT_CARD_SUCCESS:
 				puts(" done.");

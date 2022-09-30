@@ -43,6 +43,10 @@ void loop()
 			read_uid();
 			break;
 
+		case COMMAND_READ_SAK:
+			read_sak();
+			break;
+
 		case COMMAND_DETECT_CARD:
 			detect_card();
 			break;
@@ -57,6 +61,12 @@ void read_uid()
 	memcpy(buffer+1, &(mfrc522.uid), 1+mfrc522.uid.size);
 
 	Serial.write(buffer, 2+mfrc522.uid.size);
+}
+
+void read_sak()
+{
+	Serial.write(STATUS_READ_SAK_SUCCESS);
+	Serial.write(mfrc522.uid.sak);
 }
 
 void detect_card()
