@@ -64,6 +64,16 @@ int main(int argc, char *argv[])
 				send_command(fd, command, BUFFER_SIZE, DEBUG);
 				break;
 
+			/* Reading the UID. */
+			case STATUS_READ_UID_SUCCESS:
+				usleep(10000);
+				read(fd, buffer+0, 1);
+				read(fd, buffer+1, buffer[0]);
+				DBG_PRINTF("DBG: UID length: %d\n", buffer[0]);
+				for (int i = 0; i < buffer[0]; i++)  printf("%02X ", (uint8_t)buffer[1+i]);
+				printf("\n");
+				break;
+
 			/* Detecting a card. */
 			case STATUS_DETECT_CARD_SUCCESS:
 				puts(" done.");

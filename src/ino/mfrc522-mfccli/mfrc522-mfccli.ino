@@ -39,10 +39,24 @@ void loop()
 
 	switch (Serial.read())
 	{
+		case COMMAND_READ_UID:
+			read_uid();
+			break;
+
 		case COMMAND_DETECT_CARD:
 			detect_card();
 			break;
 	}
+}
+
+void read_uid()
+{
+	byte buffer[12];
+
+	buffer[0] = STATUS_READ_UID_SUCCESS;
+	memcpy(buffer+1, &(mfrc522.uid), 1+mfrc522.uid.size);
+
+	Serial.write(buffer, 2+mfrc522.uid.size);
 }
 
 void detect_card()
