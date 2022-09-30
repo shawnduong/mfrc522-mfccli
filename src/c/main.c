@@ -64,6 +64,11 @@ int main(int argc, char *argv[])
 				send_command(fd, command, BUFFER_SIZE, DEBUG);
 				break;
 
+			/* Detecting a card. */
+			case STATUS_DETECT_CARD_SUCCESS:
+				puts(" done.");
+				break;
+
 			/* Else case. */
 			default:
 				DBG_PRINTF("DBG: Misunderstood protocol code from device: 0x%02X\n", stat);

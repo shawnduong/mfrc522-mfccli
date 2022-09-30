@@ -351,6 +351,15 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 		printf("\n");
 	}
 
+	/* Printing output. */
+	switch (buffer[0])
+	{
+		case COMMAND_DETECT_CARD:
+			printf("Detecting card...");
+			fflush(stdout);
+			break;
+	}
+
 	write(fd, buffer, size);
 }
 

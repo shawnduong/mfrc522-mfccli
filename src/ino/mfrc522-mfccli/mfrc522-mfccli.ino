@@ -22,14 +22,33 @@
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
 
+/* Setup the library. */
+MFRC522 mfrc522(10, 9);
+
 void setup()
 {
 	Serial.begin(9600);
 	SPI.begin();
+	mfrc522.PCD_Init();
 }
 
 void loop()
 {
 	Serial.write(STATUS_READY);
 	while (Serial.available() == 0);
+
+	switch (Serial.read())
+	{
+		case COMMAND_DETECT_CARD:
+			detect_card();
+			break;
+	}
+}
+
+void detect_card()
+{
+	while (!(mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()))
+		delay(100);
+
+	Serial.write(STATUS_DETECT_CARD_SUCCESS);
 }
