@@ -22,6 +22,10 @@
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
 
+#define WAIT_FOR_CARD() \
+	while (!(mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial())) \
+		delay(100);
+
 /* Setup the library. */
 MFRC522 mfrc522(10, 9);
 
@@ -43,6 +47,10 @@ void loop()
 			read_uid();
 			break;
 
+		case COMMAND_READ_ATQA:
+			read_atqa();
+			break;
+
 		case COMMAND_READ_SAK:
 			read_sak();
 			break;
@@ -57,22 +65,38 @@ void read_uid()
 {
 	byte buffer[12];
 
+	WAIT_FOR_CARD();
 	buffer[0] = STATUS_READ_UID_SUCCESS;
 	memcpy(buffer+1, &(mfrc522.uid), 1+mfrc522.uid.size);
 
 	Serial.write(buffer, 2+mfrc522.uid.size);
 }
 
+void read_atqa()
+{
+	byte buffer[3];
+	byte atqaSize = 2;
+
+	WAIT_FOR_CARD();
+	buffer[0] = STATUS_READ_ATQA_SUCCESS;
+	mfrc522.PICC_WakeupA(buffer+1, &atqaSize);
+
+	/* (atqa & 0xFF00u) >> 8 */
+	buffer[2] = buffer[1];
+	buffer[1] = 0;
+
+	Serial.write(buffer, 3);
+}
+
 void read_sak()
 {
+	WAIT_FOR_CARD();
 	Serial.write(STATUS_READ_SAK_SUCCESS);
 	Serial.write(mfrc522.uid.sak);
 }
 
 void detect_card()
 {
-	while (!(mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()))
-		delay(100);
-
+	WAIT_FOR_CARD();
 	Serial.write(STATUS_DETECT_CARD_SUCCESS);
 }

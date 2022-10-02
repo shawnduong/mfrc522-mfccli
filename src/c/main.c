@@ -74,6 +74,14 @@ int main(int argc, char *argv[])
 				printf("\n");
 				break;
 
+			/* Reading the ATQA. */
+			case STATUS_READ_ATQA_SUCCESS:
+				usleep(10000);
+				read(fd, buffer, 2);
+				for (int i = 0; i < 2; i++)  printf("%02X ", (uint8_t)buffer[i]);
+				printf("\n");
+				break;
+
 			/* Reading the SAK. */
 			case STATUS_READ_SAK_SUCCESS:
 				usleep(10000);
