@@ -384,6 +384,11 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 			fflush(stdout);
 			break;
 
+		case COMMAND_WRITE:
+			printf("Writing data...");
+			fflush(stdout);
+			break;
+
 		case COMMAND_RESET:
 			printf("Resetting crypto...");
 			fflush(stdout);

@@ -22,6 +22,7 @@ The main device (typically a computer) communicates with the worker device (Ardu
 | Worker | `STATUS_READ_BLOCK_FAILURE`     | `0x29` |
 | Main   | `COMMAND_WRITE`                 | `0x30` |
 | Worker | `STATUS_WRITE_SUCCESS`          | `0x35` |
+| Worker | `STATUS_WRITE_FAILURE`          | `0x36` |
 | Main   | `COMMAND_AUTHENTICATE`          | `0x40` |
 | Main   | `COMMAND_AUTHENTICATE_A`        | `0x41` |
 | Main   | `COMMAND_AUTHENTICATE_B`        | `0x42` |
@@ -132,6 +133,14 @@ The worker device sends a `STATUS_WRITE_SUCCESS` to indicate that the write was 
 Size: 2 B
 
 Format: `[1 B STATUS_WRITE_SUCCESS][1 B BLOCK NUMBER]`
+
+#### Status: Write Failure
+
+The worker device sends a `STATUS_WRITE_FAILURE` to indicate that the data failed to successfully write.
+
+Size: 2 B
+
+Format: `[1 B STATUS_WRITE_FAILURE][1 B BLOCK NUMBER]`
 
 #### Command: Authenticate
 

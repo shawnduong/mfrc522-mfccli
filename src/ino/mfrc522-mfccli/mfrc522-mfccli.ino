@@ -14,6 +14,7 @@
 #define STATUS_READ_BLOCK_FAILURE       0x29
 #define COMMAND_WRITE                   0x30
 #define STATUS_WRITE_SUCCESS            0x35
+#define STATUS_WRITE_FAILURE            0x36
 #define COMMAND_AUTHENTICATE            0x40
 #define COMMAND_AUTHENTICATE_A          0x41
 #define COMMAND_AUTHENTICATE_B          0x42
@@ -67,6 +68,10 @@ void loop()
 
 		case COMMAND_READ_BLOCK:
 			read_block();
+			break;
+
+		case COMMAND_WRITE:
+			write();
 			break;
 
 		case COMMAND_AUTHENTICATE:
@@ -133,12 +138,12 @@ void read_block()
 	byte buffer[18];
 	byte size = sizeof(buffer);
 
+	memset(buffer, 0, size);
+
 	WAIT_FOR_CARD();
 
 	block = Serial.read();
 	trailerBlock = block + (3-block % 4);
-
-	memset(buffer, 5, 18);
 
 	/* Auth with key A. */
 	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
@@ -157,6 +162,40 @@ void read_block()
 	Serial.write(STATUS_READ_BLOCK_SUCCESS);
 	Serial.write(block);
 	Serial.write(buffer, 16);
+	STOP_CRYPTO();
+}
+
+void write()
+{
+	byte block;
+	byte trailerBlock;
+	byte buffer[16];
+
+	memset(buffer, 0, 16);
+
+	WAIT_FOR_CARD();
+
+	block = Serial.read();
+	trailerBlock = block + (3-block % 4);
+
+	Serial.readBytes(buffer, 16);
+
+	/* Auth with key B. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &keyB, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_WRITE_FAILURE);
+		Serial.write(block);
+		STOP_CRYPTO();
+		return;
+	}
+
+	/* Writing. */
+	while ((MFRC522::StatusCode) mfrc522.MIFARE_Write(block, buffer, 16) != MFRC522::STATUS_OK)
+		delay(100);
+
+	Serial.write(STATUS_WRITE_SUCCESS);
+	Serial.write(block);
 	STOP_CRYPTO();
 }
 

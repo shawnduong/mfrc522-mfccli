@@ -106,6 +106,21 @@ int main(int argc, char *argv[])
 				printf("Failed to read block %d. Try authenticating first.\n", buffer[0]);
 				break;
 
+			/* Writing a block. */
+			case STATUS_WRITE_SUCCESS:
+				usleep(10000);
+				read(fd, buffer, 1);
+				puts(" done.");
+				DBG_PRINTF("DBG: Block: %02X\n", buffer[0]);
+				break;
+
+			case STATUS_WRITE_FAILURE:
+				usleep(10000);
+				read(fd, buffer, 1);
+				puts(" failed.");
+				printf("Failed to write block %d. Try authenticating first.\n", buffer[0]);
+				break;
+
 			/* Authenticating to a block. */
 			case STATUS_AUTHENTICATE_SUCCESS:
 				puts(" done.");

@@ -14,6 +14,7 @@
 #define STATUS_READ_BLOCK_FAILURE       0x29
 #define COMMAND_WRITE                   0x30
 #define STATUS_WRITE_SUCCESS            0x35
+#define STATUS_WRITE_FAILURE            0x36
 #define COMMAND_AUTHENTICATE            0x40
 #define COMMAND_AUTHENTICATE_A          0x41
 #define COMMAND_AUTHENTICATE_B          0x42
