@@ -29,6 +29,9 @@
 #define WAIT_FOR_CARD() \
 	while (!(mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial())) \
 		delay(100);
+#define STOP_CRYPTO() \
+	mfrc522.PICC_HaltA(); \
+	mfrc522.PCD_StopCrypto1();
 
 /* Setup the library. */
 MFRC522 mfrc522(10, 9);
@@ -143,6 +146,7 @@ void authenticate()
 	}
 
 	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
+	STOP_CRYPTO();
 }
 
 void authenticate_a()
@@ -161,6 +165,7 @@ void authenticate_a()
 	}
 
 	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
+	STOP_CRYPTO();
 }
 
 void authenticate_b()
@@ -179,6 +184,7 @@ void authenticate_b()
 	}
 
 	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
+	STOP_CRYPTO();
 }
 
 void detect_card()
@@ -190,7 +196,6 @@ void detect_card()
 void reset()
 {
 	/* Stop crypto reading. */
-	mfrc522.PICC_HaltA();
-	mfrc522.PCD_StopCrypto1();
+	STOP_CRYPTO();
 	Serial.write(STATUS_RESET_SUCCESS);
 }
