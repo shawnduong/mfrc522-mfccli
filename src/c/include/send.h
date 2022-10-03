@@ -378,6 +378,8 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 			break;
 
 		case COMMAND_AUTHENTICATE:
+		case COMMAND_AUTHENTICATE_A:
+		case COMMAND_AUTHENTICATE_B:
 			printf("Authenticating to block %d (trailer block %d)...", temp, buffer[1]);
 			fflush(stdout);
 			break;

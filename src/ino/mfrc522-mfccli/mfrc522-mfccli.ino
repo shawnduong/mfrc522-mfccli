@@ -65,6 +65,14 @@ void loop()
 			authenticate();
 			break;
 
+		case COMMAND_AUTHENTICATE_A:
+			authenticate_a();
+			break;
+
+		case COMMAND_AUTHENTICATE_B:
+			authenticate_b();
+			break;
+
 		case COMMAND_DETECT_CARD:
 			detect_card();
 			break;
@@ -125,6 +133,42 @@ void authenticate()
 		Serial.write(STATUS_AUTHENTICATE_A_FAILURE);
 		return;
 	}
+
+	/* Auth with key B. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &keyB, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_AUTHENTICATE_B_FAILURE);
+		return;
+	}
+
+	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
+}
+
+void authenticate_a()
+{
+	byte trailerBlock;
+	WAIT_FOR_CARD();
+	trailerBlock = Serial.read();
+	Serial.readBytes(keyA.keyByte, 6);
+
+	/* Auth with key A. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &keyA, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_AUTHENTICATE_A_FAILURE);
+		return;
+	}
+
+	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
+}
+
+void authenticate_b()
+{
+	byte trailerBlock;
+	WAIT_FOR_CARD();
+	trailerBlock = Serial.read();
+	Serial.readBytes(keyB.keyByte, 6);
 
 	/* Auth with key B. */
 	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
