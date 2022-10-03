@@ -23,5 +23,7 @@
 #define STATUS_AUTHENTICATE_B_FAILURE   0x49
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
+#define COMMAND_RESET                   0x60
+#define STATUS_RESET_SUCCESS            0x65
 
 #endif

@@ -23,6 +23,8 @@
 #define STATUS_AUTHENTICATE_B_FAILURE   0x49
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
+#define COMMAND_RESET                   0x60
+#define STATUS_RESET_SUCCESS            0x65
 
 #define WAIT_FOR_CARD() \
 	while (!(mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial())) \
@@ -45,10 +47,6 @@ void loop()
 	Serial.write(STATUS_READY);
 	while (Serial.available() == 0);
 
-	/* Stop reading. In the future, this should become their own command. */
-	mfrc522.PICC_HaltA();
-	mfrc522.PCD_StopCrypto1();
-
 	switch (Serial.read())
 	{
 		case COMMAND_READ_UID:
@@ -69,6 +67,10 @@ void loop()
 
 		case COMMAND_DETECT_CARD:
 			detect_card();
+			break;
+
+		case COMMAND_RESET:
+			reset();
 			break;
 	}
 }
@@ -139,4 +141,12 @@ void detect_card()
 {
 	WAIT_FOR_CARD();
 	Serial.write(STATUS_DETECT_CARD_SUCCESS);
+}
+
+void reset()
+{
+	/* Stop crypto reading. */
+	mfrc522.PICC_HaltA();
+	mfrc522.PCD_StopCrypto1();
+	Serial.write(STATUS_RESET_SUCCESS);
 }

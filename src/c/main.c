@@ -107,6 +107,11 @@ int main(int argc, char *argv[])
 				puts(" done.");
 				break;
 
+			/* Resetting crypto. */
+			case STATUS_RESET_SUCCESS:
+				puts(" done.");
+				break;
+
 			/* Else case. */
 			default:
 				DBG_PRINTF("DBG: Misunderstood protocol code from device: 0x%02X\n", stat);

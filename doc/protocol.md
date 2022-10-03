@@ -31,6 +31,8 @@ The main device (typically a computer) communicates with the worker device (Ardu
 | Worker | `STATUS_AUTHENTICATE_B_FAILURE` | `0x49` |
 | Main   | `COMMAND_DETECT_CARD`           | `0x50` |
 | Worker | `STATUS_DETECT_CARD_SUCCESS`    | `0x55` |
+| Main   | `COMMAND_RESET`                 | `0x60` |
+| Worker | `STATUS_RESET_SUCCESS`          | `0x65` |
 
 ### Messages
 
@@ -201,3 +203,19 @@ The worker device sends a `STATUS_DETECT_CARD_SUCCESS` to indicate that a card h
 Size: 1 B
 
 Format: `[1 B STATUS_DETECT_CARD_SUCCESS]`
+
+#### Command: Reset
+
+The main device sends a `COMMAND_RESET` message to the worker to get the worker to reset crypto reading.
+
+Size: 1 B
+
+Format: `[1 B COMMAND_RESET]`
+
+#### Status: Reset Success
+
+The worker device sends a `STATUS_RESET_SUCCESS` to indicate that the crypto reading has been reset.
+
+Size: 1 B
+
+Format: `[1 B STATUS_RESET_SUCCESS]`

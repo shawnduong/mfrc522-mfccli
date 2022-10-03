@@ -6,7 +6,7 @@
 
 #define HELP \
 	"Syntax: help <COMMAND>\n"               \
-	"    <COMMAND>  read write auth detect"
+	"    <COMMAND>  read write auth detect reset"
 
 #define READ_USAGE \
 	"Syntax: read <ITEM>\n"           \
@@ -32,12 +32,16 @@
 #define DETECT_USAGE \
 	"Syntax: detect card"
 
+#define RESET_USAGE \
+	"Syntax: reset"
+
 #define P_HELP()              { puts(HELP)              ; continue; }
 #define P_READ_USAGE()        { puts(READ_USAGE)        ; continue; }
 #define P_READ_BLOCK_USAGE()  { puts(READ_BLOCK_USAGE)  ; continue; }
 #define P_WRITE_USAGE()       { puts(WRITE_USAGE)       ; continue; }
 #define P_AUTH_USAGE()        { puts(AUTH_USAGE)        ; continue; }
 #define P_DETECT_USAGE()      { puts(DETECT_USAGE)      ; continue; }
+#define P_RESET_USAGE()       { puts(RESET_USAGE)       ; continue; }
 
 #define IS_AB(s)       (strlen(s) == 1 && (s[0] == 'a' || s[0] == 'A' || s[0] == 'b' || s[0] == 'B'))
 #define IS_DEC(c)      (c >= '0' && c <= '9')
@@ -127,6 +131,7 @@ void get_command(char *command, uint8_t len)
 			else if (strcmp(token, "write" ) == 0)  P_WRITE_USAGE()
 			else if (strcmp(token, "auth"  ) == 0)  P_AUTH_USAGE()
 			else if (strcmp(token, "detect") == 0)  P_DETECT_USAGE()
+			else if (strcmp(token, "reset" ) == 0)  P_RESET_USAGE()
 
 			P_HELP();
 		}
@@ -233,6 +238,11 @@ void get_command(char *command, uint8_t len)
 				FREE_RET(cmd)
 
 			P_DETECT_USAGE();
+		}
+		/* reset */
+		else if (strcmp(token, "reset") == 0)
+		{
+			FREE_RET(cmd)
 		}
 		/* Unknown command. */
 		else
@@ -344,6 +354,12 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 		buffer[0] = COMMAND_DETECT_CARD;
 		size = 1;
 	}
+	/* reset */
+	else if (strcmp(token, "reset") == 0)
+	{
+		buffer[0] = COMMAND_RESET;
+		size = 1;
+	}
 
 	if (debug)
 	{
@@ -363,6 +379,11 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 
 		case COMMAND_AUTHENTICATE:
 			printf("Authenticating to block %d (trailer block %d)...", temp, buffer[1]);
+			fflush(stdout);
+			break;
+
+		case COMMAND_RESET:
+			printf("Resetting crypto...");
 			fflush(stdout);
 			break;
 	}

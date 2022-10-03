@@ -51,7 +51,7 @@ $
 ```sh
 mfrc522-mfccli $ help
 Syntax: help <COMMAND>
-    <COMMAND>  read write auth detect
+    <COMMAND>  read write auth detect reset
 ```
 
 **Read UID**
@@ -120,4 +120,11 @@ Authenticating to block 5 (trailer block 7)... done.
 ```sh
 mfrc522-mfccli $ detect card
 Detecting card... done.
+```
+
+**Reset**
+
+```sh
+mfrc522-mfccli $ reset
+Resetting crypto... done.
 ```
