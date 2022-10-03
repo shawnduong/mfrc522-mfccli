@@ -27,6 +27,8 @@ The main device (typically a computer) communicates with the worker device (Ardu
 | Worker | `STATUS_AUTHENTICATE_SUCCESS`   | `0x45` |
 | Worker | `STATUS_AUTHENTICATE_A_SUCCESS` | `0x46` |
 | Worker | `STATUS_AUTHENTICATE_B_SUCCESS` | `0x47` |
+| Worker | `STATUS_AUTHENTICATE_A_FAILURE` | `0x48` |
+| Worker | `STATUS_AUTHENTICATE_B_FAILURE` | `0x49` |
 | Main   | `COMMAND_DETECT_CARD`           | `0x50` |
 | Worker | `STATUS_DETECT_CARD_SUCCESS`    | `0x55` |
 
@@ -167,6 +169,22 @@ The worker device sends a `STATUS_AUTHENTICATE_B_SUCCESS` to indicate that authe
 Size: 1 B
 
 Format: `[1 B STATUS_AUTHENTICATE_B_SUCCESS]`
+
+#### Status: Authenticate A Failure
+
+The worker device sends a `STATUS_AUTHENTICATE_A_FAILURE` to indicate that authentication was a failure.
+
+Size: 1 B
+
+Format: `[1 B STATUS_AUTHENTICATE_A_FAILURE]`
+
+#### Status: Authenticate B Failure
+
+The worker device sends a `STATUS_AUTHENTICATE_B_FAILURE` to indicate that authentication was a failure.
+
+Size: 1 B
+
+Format: `[1 B STATUS_AUTHENTICATE_B_FAILURE]`
 
 #### Command: Detect Card
 
