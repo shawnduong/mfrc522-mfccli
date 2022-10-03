@@ -89,6 +89,19 @@ int main(int argc, char *argv[])
 				printf("%02X\n", buffer[0]);
 				break;
 
+			/* Authenticating to a block. */
+			case STATUS_AUTHENTICATE_SUCCESS:
+				puts(" done.");
+				break;
+
+			case STATUS_AUTHENTICATE_A_FAILURE:
+				puts(" failure in key A.");
+				break;
+
+			case STATUS_AUTHENTICATE_B_FAILURE:
+				puts(" failure in key B.");
+				break;
+
 			/* Detecting a card. */
 			case STATUS_DETECT_CARD_SUCCESS:
 				puts(" done.");

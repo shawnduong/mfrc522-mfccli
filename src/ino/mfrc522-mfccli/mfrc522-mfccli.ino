@@ -19,6 +19,8 @@
 #define STATUS_AUTHENTICATE_SUCCESS     0x45
 #define STATUS_AUTHENTICATE_A_SUCCESS   0x46
 #define STATUS_AUTHENTICATE_B_SUCCESS   0x47
+#define STATUS_AUTHENTICATE_A_FAILURE   0x48
+#define STATUS_AUTHENTICATE_B_FAILURE   0x49
 #define COMMAND_DETECT_CARD             0x50
 #define STATUS_DETECT_CARD_SUCCESS      0x55
 
@@ -28,6 +30,8 @@
 
 /* Setup the library. */
 MFRC522 mfrc522(10, 9);
+MFRC522::MIFARE_Key keyA;
+MFRC522::MIFARE_Key keyB;
 
 void setup()
 {
@@ -41,6 +45,10 @@ void loop()
 	Serial.write(STATUS_READY);
 	while (Serial.available() == 0);
 
+	/* Stop reading. In the future, this should become their own command. */
+	mfrc522.PICC_HaltA();
+	mfrc522.PCD_StopCrypto1();
+
 	switch (Serial.read())
 	{
 		case COMMAND_READ_UID:
@@ -53,6 +61,10 @@ void loop()
 
 		case COMMAND_READ_SAK:
 			read_sak();
+			break;
+
+		case COMMAND_AUTHENTICATE:
+			authenticate();
 			break;
 
 		case COMMAND_DETECT_CARD:
@@ -93,6 +105,34 @@ void read_sak()
 	WAIT_FOR_CARD();
 	Serial.write(STATUS_READ_SAK_SUCCESS);
 	Serial.write(mfrc522.uid.sak);
+}
+
+void authenticate()
+{
+	byte trailerBlock;
+
+	WAIT_FOR_CARD();
+	trailerBlock = Serial.read();
+	Serial.readBytes(keyA.keyByte, 6);
+	Serial.readBytes(keyB.keyByte, 6);
+
+	/* Auth with key A. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &keyA, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_AUTHENTICATE_A_FAILURE);
+		return;
+	}
+
+	/* Auth with key B. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &keyB, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_AUTHENTICATE_B_FAILURE);
+		return;
+	}
+
+	Serial.write(STATUS_AUTHENTICATE_SUCCESS);
 }
 
 void detect_card()

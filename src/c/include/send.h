@@ -251,6 +251,8 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 	uint8_t size;
 	uint8_t temp;
 
+	memset(buffer, 0, 32);
+
 	/* Get a validated user command. */
 	get_command(command, len);
 	token = strtok(command, " ");
@@ -356,6 +358,11 @@ void send_command(int8_t fd, char *command, uint8_t len, uint8_t debug)
 	{
 		case COMMAND_DETECT_CARD:
 			printf("Detecting card...");
+			fflush(stdout);
+			break;
+
+		case COMMAND_AUTHENTICATE:
+			printf("Authenticating to block %d (trailer block %d)...", temp, buffer[1]);
 			fflush(stdout);
 			break;
 	}
