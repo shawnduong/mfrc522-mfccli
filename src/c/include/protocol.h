@@ -11,6 +11,7 @@
 #define STATUS_READ_ATQA_SUCCESS        0x26
 #define STATUS_READ_SAK_SUCCESS         0x27
 #define STATUS_READ_BLOCK_SUCCESS       0x28
+#define STATUS_READ_BLOCK_FAILURE       0x29
 #define COMMAND_WRITE                   0x30
 #define STATUS_WRITE_SUCCESS            0x35
 #define COMMAND_AUTHENTICATE            0x40

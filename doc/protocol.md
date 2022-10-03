@@ -19,6 +19,7 @@ The main device (typically a computer) communicates with the worker device (Ardu
 | Worker | `STATUS_READ_ATQA_SUCCESS`      | `0x26` |
 | Worker | `STATUS_READ_SAK_SUCCESS`       | `0x27` |
 | Worker | `STATUS_READ_BLOCK_SUCCESS`     | `0x28` |
+| Worker | `STATUS_READ_BLOCK_FAILURE`     | `0x29` |
 | Main   | `COMMAND_WRITE`                 | `0x30` |
 | Worker | `STATUS_WRITE_SUCCESS`          | `0x35` |
 | Main   | `COMMAND_AUTHENTICATE`          | `0x40` |
@@ -107,6 +108,14 @@ The worker device sends a `STATUS_READ_BLOCK_SUCCESS` to indicate that the block
 Size: 18 B
 
 Format: `[1 B READ_BLOCK_SUCCESS][1 B BLOCK NUMBER][16 B BLOCK DATA]`
+
+#### Status: Read Block Failure
+
+The worker device sends a `STATUS_READ_BLOCK_FAILURE` to indicate that the block failed to successfully read.
+
+Size: 2 B
+
+Format: `[1 B READ_BLOCK_FAILURE][1 B BLOCK NUMBER]`
 
 #### Command: Write
 

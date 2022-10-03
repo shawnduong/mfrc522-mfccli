@@ -11,6 +11,7 @@
 #define STATUS_READ_ATQA_SUCCESS        0x26
 #define STATUS_READ_SAK_SUCCESS         0x27
 #define STATUS_READ_BLOCK_SUCCESS       0x28
+#define STATUS_READ_BLOCK_FAILURE       0x29
 #define COMMAND_WRITE                   0x30
 #define STATUS_WRITE_SUCCESS            0x35
 #define COMMAND_AUTHENTICATE            0x40
@@ -62,6 +63,10 @@ void loop()
 
 		case COMMAND_READ_SAK:
 			read_sak();
+			break;
+
+		case COMMAND_READ_BLOCK:
+			read_block();
 			break;
 
 		case COMMAND_AUTHENTICATE:
@@ -116,8 +121,43 @@ void read_atqa()
 void read_sak()
 {
 	WAIT_FOR_CARD();
+
 	Serial.write(STATUS_READ_SAK_SUCCESS);
 	Serial.write(mfrc522.uid.sak);
+}
+
+void read_block()
+{
+	byte block;
+	byte trailerBlock;
+	byte buffer[18];
+	byte size = sizeof(buffer);
+
+	WAIT_FOR_CARD();
+
+	block = Serial.read();
+	trailerBlock = block + (3-block % 4);
+
+	memset(buffer, 5, 18);
+
+	/* Auth with key A. */
+	if ((MFRC522::StatusCode) mfrc522.PCD_Authenticate(
+		MFRC522::PICC_CMD_MF_AUTH_KEY_A, trailerBlock, &keyA, &(mfrc522.uid)) != MFRC522::STATUS_OK)
+	{
+		Serial.write(STATUS_READ_BLOCK_FAILURE);
+		Serial.write(block);
+		STOP_CRYPTO();
+		return;
+	}
+
+	/* Reading. */
+	while ((MFRC522::StatusCode) mfrc522.MIFARE_Read(block, buffer, &size) != MFRC522::STATUS_OK)
+		delay(100);
+
+	Serial.write(STATUS_READ_BLOCK_SUCCESS);
+	Serial.write(block);
+	Serial.write(buffer, 16);
+	STOP_CRYPTO();
 }
 
 void authenticate()

@@ -89,6 +89,23 @@ int main(int argc, char *argv[])
 				printf("%02X\n", buffer[0]);
 				break;
 
+			/* Reading a block. */
+			case STATUS_READ_BLOCK_SUCCESS:
+				usleep(10000);
+				read(fd, buffer, 1);
+				DBG_PRINTF("DBG: Block: %02X\n", buffer[0]);
+				usleep(10000);
+				read(fd, buffer, 16);
+				for (int i = 0; i < 16; i++)  printf("%02X ", (uint8_t)buffer[i]);
+				printf("\n");
+				break;
+
+			case STATUS_READ_BLOCK_FAILURE:
+				usleep(10000);
+				read(fd, buffer, 1);
+				printf("Failed to read block %d. Try authenticating first.\n", buffer[0]);
+				break;
+
 			/* Authenticating to a block. */
 			case STATUS_AUTHENTICATE_SUCCESS:
 				puts(" done.");
