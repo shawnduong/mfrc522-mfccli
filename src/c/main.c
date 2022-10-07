@@ -9,24 +9,31 @@
 #include "send.h"
 #include "serial.h"
 
-#define BUFFER_SIZE 128
+#define USAGE \
+	"Usage: %s <DEVICE> <OPTIONS>\n" \
+	"OPTIONS:\n"                     \
+	"  --debug    Enable debugging mode.\n" 
 
-#define DEBUG 1
-#define DBG_PRINTF(s, ...)  if (DEBUG) printf(s, ##__VA_ARGS__);
+#define BUFFER_SIZE 128
+#define DBG_PRINTF(s, ...)  if (debug) printf(s, ##__VA_ARGS__);
 
 int main(int argc, char *argv[])
 {
+	uint8_t debug;
 	int8_t fd;
 	uint8_t setup;
 	char stat;
 	char buffer[BUFFER_SIZE];
 	char command[BUFFER_SIZE];
 
-	if (argc != 2)
+	if (argc < 2)
 	{
-		printf("Usage: %s <DEVICE>\n", argv[0]);
+		printf(USAGE, argv[0]);
 		return -1;
 	}
+
+	if (argc == 3 && (strncmp(argv[2], "--debug", 7) == 0))  debug = 1;
+	DBG_PRINTF("DBG: Debugging mode is enabled.\n");
 
 	/* Open the serial device. */
 	if ((fd = open_serial(argv[1])) < 0)
@@ -61,7 +68,7 @@ int main(int argc, char *argv[])
 			/* Device is ready to receive a command. */
 			case STATUS_READY:
 				if (setup) { puts(" done."); setup = 0; }
-				send_command(fd, command, BUFFER_SIZE, DEBUG);
+				send_command(fd, command, BUFFER_SIZE, debug);
 				break;
 
 			/* Reading the UID. */
